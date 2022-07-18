@@ -133,11 +133,19 @@
 
     <div class="grid__item {{ product_description_width }}">
       <div class="product-single__meta">
-
+      
         <h1 class="product-single__title">{{ product.title }}</h1>
-        <div>⭐️ ⭐️ ⭐️ ⭐️ ⭐️</div>
         <script>window.performance.mark('debut:product:title_visible');</script>
 
+        {% assign is_affiliate = false %}
+      {% for tag in product.tags %}
+          {% if tag contains "affiliate" %}
+            {% assign is_affiliate = true %}
+            {% assign affiliate_link = tag | split: '_' | last %}
+  {% endif %}
+        {% endfor %}
+
+{%  unless is_affiliate %}
           <div class="product__price">
             {% include 'product-price', variant: current_variant, show_vendor: section.settings.show_vendor %}
           </div>
@@ -152,6 +160,7 @@
               {%- endif -%}
             </div>
           {%- endif -%}
+      {% endunless %}
 
           {% capture "form_classes" -%}
             product-form product-form-{{ section.id }}
@@ -218,6 +227,7 @@
                 {%- if section.settings.enable_payment_button %} product-form__item--payment-button {%- endif -%}
                 {%- if product.has_only_default_variant %} product-form__item--no-variants {%- endif -%}"
               >
+                {% unless is_affiliate %}
                 <button type="submit" name="add"
                   {% unless current_variant.available %} aria-disabled="true"{% endunless %}
                   aria-label="{% unless current_variant.available %}{{ 'products.product.sold_out' | t }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endunless %}"
@@ -238,6 +248,11 @@
                 {% if section.settings.enable_payment_button %}
                   {{ form | payment_button }}
                 {% endif %}
+
+                {% else %}
+                    <a data-add-to-cart class="btn product-form__cart-submit" href='{{ affiliate_link }}' target='_blank'">See on Amazon</a>
+
+                {% endunless %}
               </div>
             </div>
           {% endform %}
